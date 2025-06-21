@@ -34,3 +34,11 @@ pytesseract==0.3.10
 Pillow==10.1.0
 opencv-python==4.8.1.78
 numpy==1.24.3
+
+# Data Models and Validation
+pydantic==2.5.0
+pydantic[email]==2.5.0
+
+# Text Processing and NLP
+spacy==3.7.2
+regex==2023.10.3

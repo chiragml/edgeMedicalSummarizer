@@ -1,0 +1,189 @@
+{
+  "ICD-10-CM": [
+    {
+      "pattern": "\\b[A-Z]\\d{2}(\\.\\d{1,4})?\\b",
+      "description": "ICD-10-CM diagnosis codes (e.g., A01.1, Z51.11)",
+      "examples": ["A01.1", "B15.9", "C78.00", "Z51.11"],
+      "priority": 3,
+      "case_sensitive": false
+    },
+    {
+      "pattern": "\\bICD-?10[\\s:-]*([A-Z]\\d{2}(\\.\\d{1,4})?)\\b",
+      "description": "ICD-10-CM codes with prefix",
+      "examples": ["ICD-10: A01.1", "ICD10-B15.9"],
+      "priority": 4,
+      "case_sensitive": false
+    }
+  ],
+  "ICD-10-PCS": [
+    {
+      "pattern": "\\b[0-9A-HJ-NP-Z]{7}\\b",
+      "description": "ICD-10-PCS procedure codes (7 alphanumeric characters)",
+      "examples": ["0016070", "00160J6", "0016074"],
+      "priority": 2,
+      "case_sensitive": false
+    }
+  ],
+  "CPT": [
+    {
+      "pattern": "\\b\\d{5}\\b",
+      "description": "CPT procedure codes (5 digits)",
+      "examples": ["99213", "36415", "80053"],
+      "priority": 2,
+      "case_sensitive": false
+    },
+    {
+      "pattern": "\\bCPT[\\s:-]*\\d{5}\\b",
+      "description": "CPT codes with prefix",
+      "examples": ["CPT: 99213", "CPT-36415"],
+      "priority": 4,
+      "case_sensitive": false
+    }
+  ],
+  "HCPCS": [
+    {
+      "pattern": "\\b[A-V]\\d{4}\\b",
+      "description": "HCPCS Level II codes (letter + 4 digits)",
+      "examples": ["A0425", "J1100", "L3806"],
+      "priority": 3,
+      "case_sensitive": false
+    },
+    {
+      "pattern": "\\bHCPCS[\\s:-]*[A-V]\\d{4}\\b",
+      "description": "HCPCS codes with prefix",
+      "examples": ["HCPCS: A0425", "HCPCS-J1100"],
+      "priority": 4,
+      "case_sensitive": false
+    }
+  ],
+  "DRG": [
+    {
+      "pattern": "\\bDRG[\\s:-]*\\d{3}\\b",
+      "description": "DRG codes with prefix",
+      "examples": ["DRG: 470", "DRG-291"],
+      "priority": 4,
+      "case_sensitive": false
+    },
+    {
+      "pattern": "\\b\\d{3}\\s*DRG\\b",
+      "description": "DRG codes with suffix",
+      "examples": ["470 DRG", "291DRG"],
+      "priority": 3,
+      "case_sensitive": false
+    }
+  ],
+  "NDC": [
+    {
+      "pattern": "\\b\\d{4,5}-\\d{3,4}-\\d{1,2}\\b",
+      "description": "NDC codes (National Drug Code)",
+      "examples": ["0069-2587-68", "54868-4313-0"],
+      "priority": 4,
+      "case_sensitive": false
+    },
+    {
+      "pattern": "\\bNDC[\\s:-]*(\\d{4,5}-\\d{3,4}-\\d{1,2})\\b",
+      "description": "NDC codes with prefix",
+      "examples": ["NDC: 0069-2587-68"],
+      "priority": 5,
+      "case_sensitive": false
+    }
+  ],
+  "LOINC": [
+    {
+      "pattern": "\\b\\d{4,5}-\\d{1}\\b",
+      "description": "LOINC codes (4-5 digits, dash, 1 digit)",
+      "examples": ["33747-0", "718-7", "4548-4"],
+      "priority": 2,
+      "case_sensitive": false
+    },
+    {
+      "pattern": "\\bLOINC[\\s:-]*(\\d{4,5}-\\d{1})\\b",
+      "description": "LOINC codes with prefix",
+      "examples": ["LOINC: 33747-0"],
+      "priority": 4,
+      "case_sensitive": false
+    }
+  ],
+  "SNOMED-CT": [
+    {
+      "pattern": "\\b\\d{6,18}\\b",
+      "description": "SNOMED CT codes (6-18 digits)",
+      "examples": ["386661006", "22298006"],
+      "priority": 1,
+      "case_sensitive": false
+    },
+    {
+      "pattern": "\\bSNOMED[\\s:-]*(\\d{6,18})\\b",
+      "description": "SNOMED CT codes with prefix",
+      "examples": ["SNOMED: 386661006"],
+      "priority": 4,
+      "case_sensitive": false
+    }
+  ],
+  "ICD-9-CM": [
+    {
+      "pattern": "\\b\\d{3}(\\.\\d{1,2})?\\b",
+      "description": "ICD-9-CM diagnosis codes",
+      "examples": ["250.00", "401.9", "786"],
+      "priority": 1,
+      "case_sensitive": false
+    },
+    {
+      "pattern": "\\bV\\d{2}(\\.\\d{1,2})?\\b",
+      "description": "ICD-9-CM V codes",
+      "examples": ["V10.3", "V58.69"],
+      "priority": 2,
+      "case_sensitive": false
+    },
+    {
+      "pattern": "\\bE\\d{3}(\\.\\d{1})?\\b",
+      "description": "ICD-9-CM E codes",
+      "examples": ["E849.0", "E878"],
+      "priority": 2,
+      "case_sensitive": false
+    }
+  ],
+  "ICD-9-PCS": [
+    {
+      "pattern": "\\b\\d{2}(\\.\\d{1,2})?\\b",
+      "description": "ICD-9-PCS procedure codes",
+      "examples": ["00.66", "39.95"],
+      "priority": 1,
+      "case_sensitive": false
+    }
+  ],
+  "MODIFIER": [
+    {
+      "pattern": "\\b(2[2-6]|5[0-9]|7[3-8]|8[0-5]|9[0-9]|A[A-Z]|E[1-4]|F[A-P]|G[A-Z]|H[A-Z]|K[A-Z]|L[T]|M[S]|P[1-6]|Q[0-X]|R[C-T]|S[A-Z]|T[A-Z]|U[A-Z]|V[A-Z]|X[E-U])\\b",
+      "description": "CPT/HCPCS modifiers",
+      "examples": ["22", "59", "AA", "LT", "RT"],
+      "priority": 2,
+      "case_sensitive": false
+    }
+  ],
+  "REVENUE-CODE": [
+    {
+      "pattern": "\\b0\\d{3}\\b",
+      "description": "Revenue codes (4 digits starting with 0)",
+      "examples": ["0450", "0636", "0730"],
+      "priority": 2,
+      "case_sensitive": false
+    }
+  ],
+  "PLACE-OF-SERVICE": [
+    {
+      "pattern": "\\bPOS[\\s:-]*(\\d{2})\\b",
+      "description": "Place of Service codes with prefix",
+      "examples": ["POS: 11", "POS-23"],
+      "priority": 4,
+      "case_sensitive": false
+    },
+    {
+      "pattern": "\\b(0[1-9]|1[0-9]|2[0-6]|3[1-4]|4[1-2]|4[9]|5[0-7]|6[0-5]|7[1-2]|8[1]|9[9])\\b",
+      "description": "Valid Place of Service codes",
+      "examples": ["11", "23", "22", "12"],
+      "priority": 1,
+      "case_sensitive": false
+    }
+  ]
+}
