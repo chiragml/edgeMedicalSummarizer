@@ -1,24 +1,35 @@
 """
 Example Usage of Tesseract OCR Utility
 
-This module demonstrates how to use the TesseractOCR class and utility functions.
+This module demonstrates how to use the OCR package with simplified imports.
 """
 
 import os
 from pathlib import Path
-from tesseract_ocr import TesseractOCR, quick_ocr, medical_document_ocr
-from utils import validate_tesseract_installation, find_images_in_directory, configure_tesseract
+
+# Import directly from the OCR package
+from ml_scripts.preprocessing.ocr import (
+    TesseractOCR,
+    quick_ocr,
+    medical_document_ocr,
+    configure_tesseract,
+    validate_tesseract_installation,
+    find_images_in_directory,
+    setup_ocr,
+    get_medical_ocr_config,
+    estimate_processing_time
+)
 
 # Configure pytesseract to use the correct Tesseract path
 configure_tesseract()
 
 
 def example_basic_ocr():
-    """Example of basic OCR usage."""
+    """Example of basic OCR usage with simplified setup."""
     print("=== Basic OCR Example ===")
     
-    # Initialize OCR
-    ocr = TesseractOCR(language='eng')
+    # Use the quick setup function
+    ocr = setup_ocr(language='eng')
     
     # Example image path (you would replace this with an actual image)
     image_path = "C:\\Users\\HP\\Pictures\\bcc-chirag.png"
@@ -36,13 +47,47 @@ def example_basic_ocr():
         print(f"Sample image not found: {image_path}")
 
 
+def example_quick_ocr():
+    """Example using the quick_ocr function."""
+    print("\n=== Quick OCR Example ===")
+    
+    image_path = "C:\\Users\\HP\\Pictures\\bcc-chirag.png"
+    
+    if os.path.exists(image_path):
+        # Single line OCR extraction
+        text = quick_ocr(image_path)
+        print(f"Quick OCR Result: {text[:200]}...")
+    else:
+        print(f"Sample image not found: {image_path}")
+
+
+def example_medical_ocr():
+    """Example using medical document OCR."""
+    print("\n=== Medical Document OCR Example ===")
+    
+    image_path = "C:\\Users\\HP\\Pictures\\bcc-chirag.png"
+    
+    if os.path.exists(image_path):
+        result = medical_document_ocr(image_path)
+        
+        if result['success']:
+            print(f"Medical OCR Result:")
+            print(f"Text: {result['text'][:200]}...")
+            print(f"Confidence: {result['confidence']}%")
+            print(f"Preprocessing used: {result['preprocessing_used']}")
+        else:
+            print(f"Medical OCR failed: {result['error']}")
+    else:
+        print(f"Sample medical document not found: {image_path}")
+
+
 def example_preprocessed_ocr():
-    """Example of OCR with preprocessing."""
-    print("\n=== Preprocessed OCR Example ===")
+    """Example of OCR with custom preprocessing."""
+    print("\n=== Custom Preprocessed OCR Example ===")
     
     ocr = TesseractOCR()
     
-    # Preprocessing options
+    # Custom preprocessing options
     preprocessing_options = {
         'grayscale': True,
         'enhance_contrast': True,
@@ -62,11 +107,11 @@ def example_preprocessed_ocr():
         )
         
         if result['success']:
-            print(f"Preprocessed OCR Result:")
-            print(f"Text: {result['text'][:200]}...")  # First 200 characters
+            print(f"Custom Preprocessed OCR Result:")
+            print(f"Text: {result['text'][:200]}...")
             print(f"Confidence: {result['confidence']}%")
         else:
-            print(f"Preprocessed OCR failed: {result['error']}")
+            print(f"Custom preprocessed OCR failed: {result['error']}")
     else:
         print(f"Sample document not found: {image_path}")
 
@@ -99,7 +144,7 @@ def example_bounding_boxes():
     print("\n=== Bounding Boxes Example ===")
     
     ocr = TesseractOCR()
-    image_path = "sample_image.jpg"
+    image_path = "C:\\Users\\HP\\Pictures\\bcc-chirag.png"
     
     if os.path.exists(image_path):
         result = ocr.extract_text_with_bounding_boxes(image_path)
@@ -128,6 +173,13 @@ def example_batch_processing():
     image_directory = "sample_images"
     
     if os.path.exists(image_directory):
+        # Estimate processing time first
+        images = find_images_in_directory(image_directory)
+        if images:
+            time_estimate = estimate_processing_time(len(images))
+            print(f"Found {len(images)} images")
+            print(f"Estimated processing time: {time_estimate['total_estimated_time_minutes']:.1f} minutes")
+        
         result = ocr.batch_process_images(
             image_directory,
             output_file="batch_ocr_results.json"
@@ -150,25 +202,33 @@ def example_batch_processing():
             print(f"Batch processing failed: {result['error']}")
     else:
         print(f"Sample images directory not found: {image_directory}")
+        print("You can create a directory with sample images to test batch processing")
 
 
-def example_quick_functions():
-    """Example of using convenience functions."""
-    print("\n=== Quick Functions Example ===")
+def example_configuration():
+    """Example of using configuration helpers."""
+    print("\n=== Configuration Example ===")
     
-    image_path = "sample_image.jpg"
+    # Get medical OCR configuration
+    medical_config = get_medical_ocr_config()
+    print(f"Medical OCR Config: {medical_config}")
+    
+    # Use custom configuration
+    ocr = TesseractOCR()
+    image_path = "C:\\Users\\HP\\Pictures\\bcc-chirag.png"
     
     if os.path.exists(image_path):
-        # Quick OCR
-        text = quick_ocr(image_path)
-        print(f"Quick OCR result: {text[:100]}...")
+        result = ocr.extract_text_from_image(
+            image_path,
+            custom_config=medical_config
+        )
         
-        # Medical document OCR
-        medical_result = medical_document_ocr(image_path)
-        if medical_result['success']:
-            print(f"Medical OCR confidence: {medical_result['confidence']}%")
+        if result['success']:
+            print(f"Medical config OCR result:")
+            print(f"Text: {result['text'][:100]}...")
+            print(f"Confidence: {result['confidence']}%")
         else:
-            print(f"Medical OCR failed: {medical_result['error']}")
+            print(f"Medical config OCR failed: {result['error']}")
     else:
         print(f"Sample image not found: {image_path}")
 
@@ -191,25 +251,30 @@ def validate_setup():
 
 
 def main():
-    """Run all examples."""
-    print("Tesseract OCR Utility Examples")
-    print("=" * 50)
+    """Run all examples with simplified imports."""
+    print("Tesseract OCR Utility Examples (Simplified Imports)")
+    print("=" * 60)
     
     # First validate the setup
     validate_setup()
     
     # Run examples
     example_basic_ocr()
+    example_quick_ocr()
+    example_medical_ocr()
     example_preprocessed_ocr()
     example_opencv_preprocessing()
     example_bounding_boxes()
     example_batch_processing()
-    example_quick_functions()
+    example_configuration()
     
-    print("\n" + "=" * 50)
+    print("\n" + "=" * 60)
     print("Examples completed!")
     print("\nNote: Most examples require actual image files to work.")
     print("Replace the sample image paths with real images to test the functionality.")
+    print("\nNow you can import OCR functions directly:")
+    print("  from ml_scripts.preprocessing.ocr import TesseractOCR, quick_ocr")
+    print("  from ml_scripts.preprocessing.ocr import setup_ocr, medical_document_ocr")
 
 
 if __name__ == "__main__":
