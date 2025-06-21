@@ -8,8 +8,16 @@ import os
 from typing import List, Dict, Any
 from pathlib import Path
 import logging
+import pytesseract
 
 logger = logging.getLogger(__name__)
+
+def configure_tesseract(tesseract_path: str = r"C:\Program Files\Tesseract-OCR\tesseract.exe"):
+    """
+    Configure pytesseract to use the correct Tesseract path.
+    """
+
+    pytesseract.pytesseract.tesseract_cmd = tesseract_path
 
 
 def get_supported_image_formats() -> List[str]:

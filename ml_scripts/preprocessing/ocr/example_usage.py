@@ -7,7 +7,10 @@ This module demonstrates how to use the TesseractOCR class and utility functions
 import os
 from pathlib import Path
 from tesseract_ocr import TesseractOCR, quick_ocr, medical_document_ocr
-from utils import validate_tesseract_installation, find_images_in_directory
+from utils import validate_tesseract_installation, find_images_in_directory, configure_tesseract
+
+# Configure pytesseract to use the correct Tesseract path
+configure_tesseract()
 
 
 def example_basic_ocr():
@@ -18,7 +21,7 @@ def example_basic_ocr():
     ocr = TesseractOCR(language='eng')
     
     # Example image path (you would replace this with an actual image)
-    image_path = "sample_image.jpg"
+    image_path = "C:\\Users\\HP\\Pictures\\bcc-chirag.png"
     
     if os.path.exists(image_path):
         result = ocr.extract_text_from_image(image_path)
@@ -50,7 +53,7 @@ def example_preprocessed_ocr():
         'scale_factor': 2.0
     }
     
-    image_path = "sample_document.jpg"
+    image_path = "C:\\Users\\HP\\Pictures\\bcc-chirag.png"
     
     if os.path.exists(image_path):
         result = ocr.extract_text_from_image(
@@ -73,7 +76,7 @@ def example_opencv_preprocessing():
     print("\n=== OpenCV Preprocessing Example ===")
     
     ocr = TesseractOCR()
-    image_path = "noisy_document.jpg"
+    image_path = "C:\\Users\\HP\\Pictures\\Screenshot 2025-01-09 161302.png"
     
     if os.path.exists(image_path):
         result = ocr.extract_text_from_image(
