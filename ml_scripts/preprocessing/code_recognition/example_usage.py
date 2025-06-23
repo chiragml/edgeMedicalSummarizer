@@ -4,7 +4,8 @@ Example Usage of Medical Code Recognition
 This module demonstrates how to use the code recognition package.
 """
 
-from ml_scripts.preprocessing.code_recognition import (
+
+from . import (
     CodeExtractor,
     MedicalCode,
     ExtractionResult,
@@ -37,7 +38,8 @@ def example_basic_extraction():
     print(f"\nExtracted {result.total_codes_found} codes:")
     
     for i, code in enumerate(result.extracted_codes, 1):
-        print(f"{i}. {code.code_type.value}: {code.code_value}")
+        # print(f"Code: {result}")
+        print(f"{i}. {code.code_type}: {code.code_value}")
         print(f"   Original text: '{code.original_text}'")
         print(f"   Position: {code.start_position}-{code.end_position}")
         print(f"   Context: {code.context[:100]}..." if code.context else "")
@@ -151,11 +153,11 @@ def example_result_analysis():
     for code_type in CodeType:
         type_codes = result.get_codes_by_type(code_type)
         if type_codes:
-            print(f"  {code_type.value}: {[c.code_value for c in type_codes]}")
+            print(f"  {code_type}: {[c.code_value for c in type_codes]}")
     
     # Get unique codes
     unique_codes = result.get_unique_codes()
-    print(f"\nUnique codes: {[f'{c.code_type.value}:{c.code_value}' for c in unique_codes]}")
+    print(f"\nUnique codes: {[f'{c.code_type}:{c.code_value}' for c in unique_codes]}")
 
 
 def example_custom_patterns():

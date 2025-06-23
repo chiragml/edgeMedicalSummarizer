@@ -76,10 +76,10 @@ class MedicalCode(BaseModel):
         return v
 
     def __str__(self) -> str:
-        return f"{self.code_type.value}: {self.code_value}"
+        return f"{self.code_type}: {self.code_value}"
 
     def __repr__(self) -> str:
-        return f"MedicalCode(type={self.code_type.value}, code={self.code_value})"
+        return f"MedicalCode(type={self.code_type}, code={self.code_value})"
 
     class Config:
         """Pydantic configuration."""
@@ -141,7 +141,7 @@ class ExtractionResult(BaseModel):
         """Generate a summary of the extraction results."""
         code_counts = {}
         for code in self.extracted_codes:
-            code_type = code.code_type.value
+            code_type = code.code_type
             code_counts[code_type] = code_counts.get(code_type, 0) + 1
 
         return {

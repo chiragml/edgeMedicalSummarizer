@@ -157,7 +157,7 @@ class CodeExtractor:
                 matched_text = match.group()
                 
                 # For patterns with groups, extract the actual code from the first group
-                if match.groups():
+                if match.groups() and match.group(1):
                     code_value = match.group(1)
                 else:
                     code_value = matched_text
