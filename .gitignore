@@ -86,4 +86,3 @@ models/
 
 # Ignore any other large or generated folders
 node_modules/
-.env
