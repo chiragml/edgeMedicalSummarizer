@@ -47,24 +47,26 @@ def allowed_file(filename):
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
-# --- Dependency Validation at Startup ---
-# @app.before_request
-# def check_tesseract():
-#     # This check runs once before the first request to validate the Tesseract installation.
-#     if not app.config.get('TESSERACT_CHECKED', False):
-#         logging.info("Performing one-time Tesseract installation check...")
-#         tesseract_status = validate_tesseract_installation()
-#         if not tesseract_status['installed']:
-#             logging.error("--- TESSERACT OCR IS NOT INSTALLED OR CONFIGURED CORRECTLY ---")
-#             logging.error(f"Error: {tesseract_status.get('error')}")
-#             logging.error(f"Suggestion: {tesseract_status.get('suggestion')}")
-#         else:
-#             # Ensure pytesseract knows the path if not in system PATH.
-#             # This is redundant if Tesseract is in PATH, but safe to do.
-#             configure_tesseract()
-#             logging.info("Tesseract installation check passed.")
-#         app.config['TESSERACT_CHECKED'] = True
+def perform_startup_checks():
+    """Runs all necessary checks when the application starts."""
+    logging.info("--- Performing application startup checks ---")
+    
+    # 1. Tesseract Installation Check (quick version)
+    logging.info("Performing one-time Tesseract installation check...")
+    # We use quick_check=True to avoid the slow language scan on startup.
+    tesseract_status = validate_tesseract_installation(quick_check=True)
+    if not tesseract_status['installed']:
+        logging.error("--- TESSERACT OCR IS NOT INSTALLED OR CONFIGURED CORRECTLY ---")
+        logging.error(f"Error: {tesseract_status.get('error')}")
+        logging.error(f"Suggestion: {tesseract_status.get('suggestion')}")
+    else:
+        configure_tesseract()
+        logging.info("Tesseract installation check passed.")
+        logging.info(f"Tesseract version: {tesseract_status.get('version')}")
 
+# Run the checks immediately when the app module is loaded.
+# This moves the delay from the first request to the server boot process.
+perform_startup_checks()
 
 # --- API Endpoints ---
 

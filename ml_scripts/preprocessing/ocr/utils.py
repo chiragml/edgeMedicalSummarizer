@@ -8,6 +8,8 @@ import os
 from typing import List, Dict, Any
 from pathlib import Path
 import logging
+import re
+import subprocess
 import pytesseract
 
 logger = logging.getLogger(__name__)
@@ -61,27 +63,50 @@ def find_images_in_directory(directory_path: str) -> List[str]:
         return []
 
 
-def validate_tesseract_installation() -> Dict[str, Any]:
+def validate_tesseract_installation(quick_check: bool = False) -> Dict[str, Any]:
     """
     Validate that Tesseract is properly installed and accessible.
     
+    Args:
+        quick_check: If True, skips the potentially slow language list check.
+
     Returns:
         Dictionary containing validation results
     """
     try:
         import pytesseract
-        
-        # Try to get Tesseract version
-        version = pytesseract.get_tesseract_version()
-        
-        # Try to get available languages
-        languages = pytesseract.get_languages()
-        
+        from packaging.version import InvalidVersion
+
+        version = "unknown"
+        try:
+            # This can fail on older Tesseract versions like 3.05.00dev
+            version = str(pytesseract.get_tesseract_version())
+        except (InvalidVersion, ValueError):
+            # Fallback for older versions: run command manually and parse with regex
+            logger.warning("Could not parse Tesseract version via pytesseract. Attempting manual fallback.")
+            try:
+                cmd_path = pytesseract.pytesseract.tesseract_cmd or 'tesseract'
+                result = subprocess.run([cmd_path, '--version'], capture_output=True, text=True, check=True)
+                match = re.search(r'tesseract\s+([\d\w\.-]+)', result.stdout)
+                if match:
+                    version = match.group(1)
+            except Exception as fallback_exc:
+                logger.error(f"Manual Tesseract version check failed: {fallback_exc}")
+                raise fallback_exc  # Re-raise to be caught by the outer try/except
+
+        languages = ['...skipped...']
+        default_lang = 'eng'
+
+        if not quick_check:
+            # Try to get available languages (this can be slow)
+            languages = pytesseract.get_languages()
+            default_lang = 'eng' if 'eng' in languages else languages[0] if languages else None
+
         return {
             'installed': True,
-            'version': str(version),
+            'version': version,
             'available_languages': languages,
-            'default_language': 'eng' if 'eng' in languages else languages[0] if languages else None
+            'default_language': default_lang
         }
         
     except Exception as e:

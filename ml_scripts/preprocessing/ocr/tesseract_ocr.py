@@ -339,7 +339,9 @@ def quick_ocr(image_source: Union[str, Image.Image], language: str = 'eng') -> s
         return result.get('text', '') if result['success'] else ''
     if isinstance(image_source, Image.Image):
         # Handle in-memory PIL Image object
-        config = f'--oem 3 --psm 6 -l {language}'
+        # NOTE: Removed '--oem 3' as it is not compatible with Tesseract v3.x.
+        # Tesseract v3 only has one OCR engine mode (OEM 0).
+        config = f'--psm 6 -l {language}'
         return pytesseract.image_to_string(image_source, config=config).strip()
     logger.error(f"Unsupported type for quick_ocr: {type(image_source)}")
     return ''

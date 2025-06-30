@@ -8,10 +8,13 @@ example_usage.py file for a realistic test.
 """
 
 import requests
+import os
 import json
 
 # --- Configuration ---
-BASE_URL = "http://localhost:5000"
+# Read the base URL from an environment variable to allow testing against deployed servers.
+# Defaults to localhost if the environment variable is not set.
+BASE_URL = os.getenv("API_BASE_URL", "http://localhost:5000")
 CODE_EXTRACT_ENDPOINT = f"{BASE_URL}/api/code-extract"
 
 # --- Test Functions ---
