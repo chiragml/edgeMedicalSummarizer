@@ -18,11 +18,11 @@ import io
 
 # --- Import your custom ML/processing modules ---
 # The OCR module is already built and located in the ml_scripts directory
-from ml_scripts.preprocessing.ocr import validate_tesseract_installation, configure_tesseract
+from ml_scripts.preprocessing.ocr import validate_tesseract_installation, configure_tesseract , quick_ocr
 
 # Using your existing module for code extraction from the 'code_recognition' module.
+# Using the more powerful function for a richer API response.
 from ml_scripts.preprocessing.code_recognition import extract_medical_codes
-
 # --- Pydantic Models for Request Validation ---
 class CodeExtractRequest(BaseModel):
     text: str
@@ -48,22 +48,22 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 
 # --- Dependency Validation at Startup ---
-@app.before_request
-def check_tesseract():
-    # This check runs once before the first request
-    if not hasattr(app, 'tesseract_checked'):
-        logging.info("Performing one-time Tesseract installation check...")
-        tesseract_status = validate_tesseract_installation()
-        if not tesseract_status['installed']:
-            logging.error("--- TESSERACT OCR IS NOT INSTALLED OR CONFIGURED CORRECTLY ---")
-            logging.error(f"Error: {tesseract_status.get('error')}")
-            logging.error(f"Suggestion: {tesseract_status.get('suggestion')}")
-        else:
-            # Ensure pytesseract knows the path if not in system PATH.
-            # This is redundant if Tesseract is in PATH, but safe to do.
-            configure_tesseract()
-            logging.info("Tesseract installation check passed.")
-        app.tesseract_checked = True
+# @app.before_request
+# def check_tesseract():
+#     # This check runs once before the first request to validate the Tesseract installation.
+#     if not app.config.get('TESSERACT_CHECKED', False):
+#         logging.info("Performing one-time Tesseract installation check...")
+#         tesseract_status = validate_tesseract_installation()
+#         if not tesseract_status['installed']:
+#             logging.error("--- TESSERACT OCR IS NOT INSTALLED OR CONFIGURED CORRECTLY ---")
+#             logging.error(f"Error: {tesseract_status.get('error')}")
+#             logging.error(f"Suggestion: {tesseract_status.get('suggestion')}")
+#         else:
+#             # Ensure pytesseract knows the path if not in system PATH.
+#             # This is redundant if Tesseract is in PATH, but safe to do.
+#             configure_tesseract()
+#             logging.info("Tesseract installation check passed.")
+#         app.config['TESSERACT_CHECKED'] = True
 
 
 # --- API Endpoints ---
@@ -92,8 +92,17 @@ def ocr_extract_endpoint():
         image_bytes = file.read()
         pil_image = Image.open(io.BytesIO(image_bytes))
 
+        # --- Performance Optimization: Resize large images before OCR ---
+        # Tesseract's performance degrades significantly on very large images.
+        # We'll resize images that are larger than a certain threshold to improve speed.
+        MAX_DIMENSION = 2500
+        width, height = pil_image.size
+        if width > MAX_DIMENSION or height > MAX_DIMENSION:
+            logging.info(f"Image is large ({width}x{height}), resizing to max dimension {MAX_DIMENSION}px.")
+            pil_image.thumbnail((MAX_DIMENSION, MAX_DIMENSION), Image.Resampling.LANCZOS)
+
         # Perform OCR directly on the in-memory image object
-        extracted_text = pytesseract.image_to_string(pil_image)
+        extracted_text = quick_ocr(pil_image)
 
         if not extracted_text.strip():
             return jsonify({'success': False, 'error': 'OCR failed to extract text. The image might be empty or unreadable.'}), 500
@@ -127,7 +136,7 @@ def code_extract_endpoint():
     # The result is a Pydantic model, so we convert it to a JSON-serializable dict.
     extraction_result = extract_medical_codes(req_data.text)
     
-    # .model_dump(mode='json') is used to ensure Pydantic objects (like Enums) are properly serialized.
+    # .model_dump(mode='json') is used to ensure Pydantic objects are properly serialized.
     response_data = extraction_result.model_dump(mode='json')
     return jsonify({'success': True, 'result': response_data})
 

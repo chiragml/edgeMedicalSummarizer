@@ -319,20 +319,30 @@ class TesseractOCR:
 
 
 # Convenience functions for easy usage
-def quick_ocr(image_path: str, language: str = 'eng') -> str:
+from typing import Union
+
+def quick_ocr(image_source: Union[str, Image.Image], language: str = 'eng') -> str:
     """
     Quick OCR extraction with default settings.
     
     Args:
-        image_path: Path to the image file
+        image_source: Path to the image file (str) or a PIL Image object.
         language: Language code for OCR
         
     Returns:
         Extracted text as string
     """
-    ocr = TesseractOCR(language=language)
-    result = ocr.extract_text_from_image(image_path)
-    return result.get('text', '') if result['success'] else ''
+    if isinstance(image_source, str):
+        # Handle file path
+        ocr = TesseractOCR(language=language)
+        result = ocr.extract_text_from_image(image_source)
+        return result.get('text', '') if result['success'] else ''
+    if isinstance(image_source, Image.Image):
+        # Handle in-memory PIL Image object
+        config = f'--oem 3 --psm 6 -l {language}'
+        return pytesseract.image_to_string(image_source, config=config).strip()
+    logger.error(f"Unsupported type for quick_ocr: {type(image_source)}")
+    return ''
 
 
 def medical_document_ocr(image_path: str) -> Dict[str, Any]:
