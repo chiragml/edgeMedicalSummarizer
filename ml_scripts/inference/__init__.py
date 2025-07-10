@@ -34,7 +34,6 @@ _generator: Optional[TextGenerationPipeline] = None
 app = Flask(__name__)
 app.config['RESTFUL_JSON'] = {'ensure_ascii': False}
 api = Api(app)
-
 class StatusResource(Resource):
     """Get current API status and model information"""
     
@@ -50,15 +49,13 @@ class StatusResource(Resource):
             return {
                 "status": "ready",
                 "model_loaded": False,
-                "model_type": None,
-                "message_count": 0
+                "model_type": None
             }
         
         return {
             "status": "ready",
-            "model_loaded": _generator._is_loaded,
-            "model_type": _generator.model_type,
-            "message_count": len(_generator.chat_history)
+            "model_loaded": _generator._model.check_health(),
+            "model_type": _generator.model_type
         }
 
 class LoadModelResource(Resource):
@@ -88,7 +85,9 @@ class LoadModelResource(Resource):
                 memory_threshold=data.get('memory_threshold', 20),
                 **data.get('model_kwargs', {})
             )
-            
+            print(_generator.__dict__)
+            if not _generator._is_loaded:
+                return {"error": "Failed to initialize generator"}, 500
             logger.info(f"Model {data['model_type']} loaded successfully")
             
             return {
@@ -213,20 +212,52 @@ class HealthResource(Resource):
     """Simple health check endpoint"""
     
     def get(self):
-        """
-        Health check
+        if not _generator:
+            return {"status": "unhealthy", "error": "No model loaded"}, 503
         
-        curl -X GET "http://localhost:5000/health"
+        try:
+            return {'status': _generator._model.check_health()}
+        except Exception as e:
+            return {"status": "unhealthy", "error": str(e)}, 503
+
+class ModelInfoResource(Resource):
+    """Get remote model information"""
+    
+    def get(self):
         """
-        return {"status": "healthy", "service": "medical-ai-text-generation"}
+        Get model info from remote server
+        
+        curl -X GET "http://localhost:5000/model/info"
+        """
+        global _generator
+        
+        if _generator is None:
+            return {
+                "error": "No model loaded. Please load a model first using /load endpoint"
+            }, 400
+        
+        if not _generator._is_loaded:
+            return {
+                "error": "Model not loaded yet"
+            }, 400
+        
+        try:
+            model_info = _generator._model.get_model_info()
+            return model_info
+            
+        except Exception as e:
+            logger.error(f"Failed to get model info: {e}")
+            return {"error": f"Failed to get model info: {str(e)}"}, 500
 
 # Register resources with the API
+
 api.add_resource(StatusResource, '/')
 api.add_resource(LoadModelResource, '/load')
 api.add_resource(GenerateResource, '/generate')
-api.add_resource(HistoryResource, '/history')
-api.add_resource(ResetResource, '/reset')
+# api.add_resource(HistoryResource, '/history')
+# api.add_resource(ResetResource, '/reset')
 api.add_resource(HealthResource, '/health')
+api.add_resource(ModelInfoResource, '/model/info')
 
 # Convenience function to run the server
 def run_server(host: str = "0.0.0.0", port: int = 5000, debug: bool = False):

@@ -83,7 +83,6 @@ temp_uploads/
 
 # Ignore NLP/model/data folders if present
 data/
-models/
 *.model
 
 # Ignore any other large or generated folders

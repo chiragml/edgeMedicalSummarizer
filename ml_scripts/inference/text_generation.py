@@ -43,14 +43,15 @@ class TextGenerationPipeline:
         self._model = None
         self._tokenizer = None
         self._is_loaded = False
-        
+        self._load_model()
         logger.info(f"TextGenerator initialized for model: {model_type}")
     
     def _load_model(self) -> None:
         """Load model if not already loaded"""
+        logger.info(f"Loading model {self.model_type} from path {self.model_path}")
         if self._is_loaded:
             return
-        
+
         try:
             if self.model_path:
                 self._model = get_model(self.model_type, model_path=self.model_path, **self.model_kwargs)
@@ -61,10 +62,10 @@ class TextGenerationPipeline:
             
             self._is_loaded = True
             logger.info(f"Model {self.model_type} loaded")
-            
+            print(f"Model loaded successfully: {self._model}")
         except Exception as e:
             logger.error(f"Failed to load model: {e}")
-            raise
+            raise RuntimeError(f"Failed to load model {self.model_type}: {e}")
     
     def _manage_memory(self) -> None:
         """Keep chat history under threshold"""
